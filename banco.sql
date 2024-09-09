@@ -363,6 +363,7 @@ CREATE TABLE transferencia (
     GRANT SELECT ON banco.caja_ahorro TO 'atm'@'%';
     GRANT INSERT banco.transaccion TO 'atm'@'%'; /*PREGUNTAR*/
 
+    /*PREGUNTAR POR JOIN*/
 
 
 
