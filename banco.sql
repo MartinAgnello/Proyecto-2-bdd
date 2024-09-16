@@ -371,23 +371,23 @@ CREATE TABLE transferencia (
 
 	
 	CREATE VIEW trans_cajas_ahorro AS
-	SELECT 
-		ca_a.nro_caja, 
-		ca_a.saldo, 
-		transa.nro_trans, 
+	SELECT
+		ca.nro_ca,
+		ca.saldo,
+		transa.nro_trans,
 		transa.fecha,
-		transa.hora, 
-		transa.monto, 
-		ca.cod_caja, 
+		transa.hora,
+		transa.monto,
+		cj.cod_caja,
 		cl.nro_cliente,
-		cl.tipo_doc, 
-		cl.nro_doc, 
-		cl.nombre, 
-		cl.apellido, 
+		cl.tipo_doc,
+		cl.nro_doc,
+		cl.nombre,
+		cl.apellido,
 		transf.destino,
-		
-		/* Agregamos la columna tipo usando CASE */
-		CASE 
+
+		/* Columna tipo usando CASE */
+		CASE
 			WHEN transf.nro_trans IS NOT NULL THEN 'Transferencia'
 			WHEN deposito.nro_ca IS NOT NULL THEN 'Depósito'
 			WHEN debito.nro_trans IS NOT NULL THEN 'Débito'
@@ -395,25 +395,25 @@ CREATE TABLE transferencia (
 			ELSE 'Otro'
 		END AS tipo
 
-	FROM transferencia AS transf 
+	FROM transferencia AS transf
 	LEFT JOIN transaccion_por_caja ON transf.nro_trans = transaccion_por_caja.nro_trans
 	LEFT JOIN transaccion AS transa ON transa.nro_trans = transaccion_por_caja.nro_trans
-	/* Hasta acá transferencia y transacción están relacionadas */
+	/* Unimos transferencia con transacción */
 
 	LEFT JOIN cliente_ca ON transf.nro_cliente = cliente_ca.nro_cliente
 	LEFT JOIN cliente AS cl ON cliente_ca.nro_cliente = cl.nro_cliente
-	/* Hasta acá transferencia y cliente están relacionados */
+	/* Unimos transferencia con cliente */
 
-	LEFT JOIN caja_ahorro AS ca_a ON ca_a.nro_ca = transf.destino 
+	LEFT JOIN caja_ahorro AS ca ON ca.nro_ca = transf.destino
 	/* Unimos caja ahorro y transferencia */
 
-	LEFT JOIN caja AS ca ON transaccion_por_caja.cod_caja = ca.cod_caja
-	/* Unimos el cod de caja con el cod de caja de transacción */
+	LEFT JOIN caja AS cj ON transaccion_por_caja.cod_caja = cj.cod_caja
+	/* Unimos cod de caja con transacción */
 
 	LEFT JOIN deposito ON deposito.nro_ca = ca.nro_ca
 	LEFT JOIN debito ON debito.nro_trans = transa.nro_trans
-	LEFT JOIN extraccion ON extraccion.nro_cliente = cliente_ca.nro_cliente
-	LEFT JOIN cliente ON cliente_ca.nro_cliente = cliente.nro_cliente;
+	LEFT JOIN extraccion ON extraccion.nro_cliente = cliente_ca.nro_cliente;
+
 
 	/*Unimos los tipos*/
 	
