@@ -369,59 +369,56 @@ CREATE TABLE transferencia (
     GRANT SELECT ON banco.caja_ahorro TO 'atm'@'%';
     GRANT INSERT ON banco.transaccion TO 'atm'@'%'; /*PREGUNTAR*/
 
-	
-	CREATE VIEW trans_cajas_ahorro AS
-	SELECT
-		ca.nro_ca,
-		ca.saldo,
-		transa.nro_trans,
-		transa.fecha,
-		transa.hora,
-		/* Columna tipo usando CASE */
-		CASE
-			WHEN transf.nro_trans IS NOT NULL THEN 'Transferencia'
-			WHEN deposito.nro_ca IS NOT NULL THEN 'Depósito'
-			WHEN debito.nro_trans IS NOT NULL THEN 'Débito'
-			WHEN extraccion.nro_cliente IS NOT NULL THEN 'Extracción'
-			ELSE 'NULL'
-		END AS tipo,
-		transa.monto,
-		cj.cod_caja,
-		cl.nro_cliente,
-		cl.tipo_doc,
-		cl.nro_doc,
-		cl.nombre,
-		cl.apellido,
-		transf.destino
 
+    CREATE VIEW trans_cajas_ahorro AS
+    SELECT
+        ca.nro_ca,
+        ca.saldo,
+        transa.nro_trans,
+        transa.fecha,
+        transa.hora,
+        CASE
+            WHEN transf.nro_trans IS NOT NULL THEN 'Transferencia'
+            WHEN deposito.nro_trans IS NOT NULL THEN 'Depósito'
+            WHEN debito.nro_trans IS NOT NULL THEN 'Débito'
+            WHEN extraccion.nro_trans IS NOT NULL THEN 'Extracción'
+            ELSE 'NULL'
+        END AS tipo,
+        transa.monto,
+        cj.cod_caja,
+        cl.nro_cliente,
+        cl.tipo_doc,
+        cl.nro_doc,
+        cl.nombre,
+        cl.apellido,
+        transf.destino AS destino
+    FROM transaccion AS transa
+    LEFT JOIN transaccion_por_caja ON transa.nro_trans = transaccion_por_caja.nro_trans
+    LEFT JOIN caja AS cj ON transaccion_por_caja.cod_caja = cj.cod_caja
+    LEFT JOIN deposito ON transa.nro_trans = deposito.nro_trans
+    LEFT JOIN extraccion ON transa.nro_trans = extraccion.nro_trans
+    LEFT JOIN debito ON transa.nro_trans = debito.nro_trans
+    LEFT JOIN transferencia AS transf ON transa.nro_trans = transf.nro_trans
+    LEFT JOIN cliente_ca ON transa.nro_trans = cliente_ca.nro_cliente
+    LEFT JOIN cliente AS cl ON cliente_ca.nro_cliente = cl.nro_cliente
+    LEFT JOIN caja_ahorro AS ca ON ca.nro_ca = (
+    CASE
+        WHEN transf.destino IS NOT NULL THEN transf.destino
+        WHEN deposito.nro_ca IS NOT NULL THEN deposito.nro_ca
+        WHEN extraccion.nro_ca IS NOT NULL THEN extraccion.nro_ca
+        ELSE NULL
+    END
+    );
 
-	FROM transferencia AS transf
-	LEFT JOIN transaccion_por_caja ON transf.nro_trans = transaccion_por_caja.nro_trans
-	LEFT JOIN transaccion AS transa ON transa.nro_trans = transaccion_por_caja.nro_trans
-	/* Unimos transferencia con transacción */
-
-	LEFT JOIN cliente_ca ON transf.nro_cliente = cliente_ca.nro_cliente
-	LEFT JOIN cliente AS cl ON cliente_ca.nro_cliente = cl.nro_cliente
-	/* Unimos transferencia con cliente */
-
-	LEFT JOIN caja_ahorro AS ca ON ca.nro_ca = transf.destino
-	/* Unimos caja ahorro y transferencia */
-
-	LEFT JOIN caja AS cj ON transaccion_por_caja.cod_caja = cj.cod_caja
-	/* Unimos cod de caja con transacción */
-
-	LEFT JOIN deposito ON deposito.nro_ca = ca.nro_ca
-	LEFT JOIN debito ON debito.nro_trans = transa.nro_trans
-	LEFT JOIN extraccion ON extraccion.nro_cliente = cliente_ca.nro_cliente;
 
 
 	/*Unimos los tipos*/
-	
+
 	/*falta cod_caja y ver como relacionar el tipo */
-	
+
 	/*
-	Utilizaremos left join xq hay nulos en algunas tablas. Preguntar si hacemos bien utilizando 
-	todos LEFT JOIN 
+	Utilizaremos left join xq hay nulos en algunas tablas. Preguntar si hacemos bien utilizando
+	todos LEFT JOIN
 	*/
 	
 
