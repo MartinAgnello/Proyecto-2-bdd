@@ -155,7 +155,7 @@ CREATE TABLE tasa_prestamo (
     monto_sup DECIMAL(10,2) UNSIGNED NOT NULL,
     tasa DECIMAL(4,2) UNSIGNED NOT NULL,
 
-    CONSTRAINT pk_prestamo
+    CONSTRAINT pk_tasa_prestamo
     PRIMARY KEY (monto_inf, monto_sup, periodo)
 
 ) ENGINE=InnoDB;
