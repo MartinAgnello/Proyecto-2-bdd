@@ -401,45 +401,50 @@ CREATE TABLE transferencia (
     GRANT INSERT ON banco.transaccion TO 'atm'@'%'; /*PREGUNTAR*/
 
 
-    CREATE VIEW trans_cajas_ahorro AS
-    SELECT
-        ca.nro_ca,
-        ca.saldo,
-        transa.nro_trans,
-        transa.fecha,
-        transa.hora,
-        CASE
-            WHEN transf.nro_trans IS NOT NULL THEN 'Transferencia'
-            WHEN deposito.nro_trans IS NOT NULL THEN 'Depósito'
-            WHEN debito.nro_trans IS NOT NULL THEN 'Débito'
-            WHEN extraccion.nro_trans IS NOT NULL THEN 'Extracción'
-            ELSE 'NULL'
-        END AS tipo,
-        transa.monto,
-        cj.cod_caja,
-        cl.nro_cliente,
-        cl.tipo_doc,
-        cl.nro_doc,
-        cl.nombre,
-        cl.apellido,
-        transf.destino AS destino
-    FROM transaccion AS transa
-    LEFT JOIN transaccion_por_caja ON transa.nro_trans = transaccion_por_caja.nro_trans
-    LEFT JOIN caja AS cj ON transaccion_por_caja.cod_caja = cj.cod_caja
-    LEFT JOIN deposito ON transa.nro_trans = deposito.nro_trans
-    LEFT JOIN extraccion ON transa.nro_trans = extraccion.nro_trans
-    LEFT JOIN debito ON transa.nro_trans = debito.nro_trans
-    LEFT JOIN transferencia AS transf ON transa.nro_trans = transf.nro_trans
-    LEFT JOIN cliente_ca ON transa.nro_trans = cliente_ca.nro_cliente
-    LEFT JOIN cliente AS cl ON cliente_ca.nro_cliente = cl.nro_cliente
-    LEFT JOIN caja_ahorro AS ca ON ca.nro_ca = (
-    CASE
-        WHEN transf.destino IS NOT NULL THEN transf.destino
-        WHEN deposito.nro_ca IS NOT NULL THEN deposito.nro_ca
-        WHEN extraccion.nro_ca IS NOT NULL THEN extraccion.nro_ca
-        ELSE NULL
-    END
-    );
+	CREATE VIEW trans_cajas_ahorro AS
+	SELECT
+		ca.nro_ca,
+		ca.saldo,
+		transa.nro_trans,
+		transa.fecha,
+		transa.hora,
+		CASE
+			WHEN transf.nro_trans IS NOT NULL THEN 'Transferencia'
+			WHEN deposito.nro_trans IS NOT NULL THEN 'Depósito'
+			WHEN debito.nro_trans IS NOT NULL THEN 'Débito'
+			WHEN extraccion.nro_trans IS NOT NULL THEN 'Extracción'
+			ELSE NULL
+		END AS tipo,
+		transa.monto,
+		cj.cod_caja,
+		cl.nro_cliente,
+		cl.tipo_doc,
+		cl.nro_doc,
+		cl.nombre,
+		cl.apellido,
+		transf.destino AS destino
+	FROM transaccion AS transa
+	LEFT JOIN transaccion_por_caja ON transa.nro_trans = transaccion_por_caja.nro_trans
+	LEFT JOIN caja AS cj ON transaccion_por_caja.cod_caja = cj.cod_caja
+	LEFT JOIN deposito ON transa.nro_trans = deposito.nro_trans
+	LEFT JOIN extraccion ON transa.nro_trans = extraccion.nro_trans
+	LEFT JOIN debito ON transa.nro_trans = debito.nro_trans
+	LEFT JOIN transferencia AS transf ON transa.nro_trans = transf.nro_trans
+	LEFT JOIN cliente_ca ON (
+		(debito.nro_cliente = cliente_ca.nro_cliente AND debito.nro_ca = cliente_ca.nro_ca) OR
+		(extraccion.nro_cliente = cliente_ca.nro_cliente AND extraccion.nro_ca = cliente_ca.nro_ca) OR
+		(transf.nro_cliente = cliente_ca.nro_cliente AND transf.origen = cliente_ca.nro_ca)
+	)
+	LEFT JOIN cliente AS cl ON cliente_ca.nro_cliente = cl.nro_cliente
+	LEFT JOIN caja_ahorro AS ca ON ca.nro_ca = (
+		CASE
+			WHEN transf.destino IS NOT NULL THEN transf.destino
+			WHEN deposito.nro_ca IS NOT NULL THEN deposito.nro_ca
+			WHEN extraccion.nro_ca IS NOT NULL THEN extraccion.nro_ca
+			ELSE NULL
+		END
+	);
+
 
 
 
