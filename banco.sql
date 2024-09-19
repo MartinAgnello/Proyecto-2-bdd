@@ -392,14 +392,16 @@ CREATE TABLE transferencia (
 
     -- Eliminamos el usuario vacio
     DROP USER IF EXISTS ''@'localhost';
-
-
-
+	
+	
+	-- Creamos el usuario atm
     CREATE USER IF NOT EXISTS 'atm'@'%' IDENTIFIED BY 'atm';
 
     GRANT SELECT ON banco.caja_ahorro TO 'atm'@'%';
     GRANT INSERT ON banco.transaccion TO 'atm'@'%'; /*PREGUNTAR*/
-
+	
+#-------------------------------------------------------------------
+#Creacion de vistas 
 
 	CREATE VIEW trans_cajas_ahorro AS
 	SELECT
